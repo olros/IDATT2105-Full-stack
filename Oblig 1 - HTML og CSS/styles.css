@@ -73,7 +73,7 @@ header {
 
 .content {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   grid-gap: var(--spacing);
   margin: var(--spacing);
   max-width: var(--maxWidth);
@@ -106,9 +106,6 @@ footer {
   * {
     --border-radius: 10px;
     --spacing: 6px;
-  }
-  .content {
-    grid-template-columns: 1fr;
   }
   .paper {
     margin: var(--spacing);
