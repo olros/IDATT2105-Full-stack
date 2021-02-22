@@ -1,9 +1,10 @@
 package com.olafros.exercise2.controller
 
-import com.olafros.exercise2.model.*
-import com.olafros.exercise2.repository.BookRepository
-import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
+import com.olafros.exercise2.model.BookDto
+import com.olafros.exercise2.model.BookDtoList
+import com.olafros.exercise2.model.CreateBookDto
+import com.olafros.exercise2.model.UpdateBookDto
+import com.olafros.exercise2.service.BookService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
@@ -11,51 +12,23 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/api/books")
 class BookController(
-    val bookRepository: BookRepository,
+    val bookService: BookService,
 ) {
 
-    companion object {
-        private val logger = LoggerFactory.getLogger(BookController::class.java)
-    }
 
     @GetMapping("/{bookId}")
-    fun getBookById(@PathVariable bookId: Long): ResponseEntity<*> {
-        val book = bookRepository.findBookByIsbn(bookId)
-        return if (book != null) {
-            ResponseEntity.ok(book.toBookDto())
-        } else {
-            logger.warn("Could not find book by id: $bookId")
-            ResponseEntity.status(HttpStatus.NOT_FOUND).body<Any>(ErrorResponse("Could not find the book"))
-        }
+    fun getBookById(@PathVariable bookId: Long): ResponseEntity<BookDto> {
+        return ResponseEntity.ok(bookService.getBookById(bookId))
     }
 
     @GetMapping
-    fun getBooks(@RequestParam name: String?, @RequestParam author: String?): ResponseEntity<*> {
-        val books = when {
-            (name != null && author != null) -> {
-                logger.info("Search for book by name: $name and author: $author")
-                bookRepository.findBooksByNameContainsAndAuthors_NameContains(
-                    name,
-                    author
-                )
-            }
-            (name != null) -> {
-                logger.info("Search for book by name: $name")
-                bookRepository.findBooksByNameContains(name)
-            }
-            (author != null) -> {
-                logger.info("Search for book by author: $author")
-                bookRepository.findByAuthors_NameContains(author)
-            }
-            else -> bookRepository.findAll()
-        }
-        return ResponseEntity.ok(books.map { book -> book.toBookDtoList() })
+    fun getBooks(@RequestParam name: String?, @RequestParam author: String?): ResponseEntity<List<BookDtoList>> {
+        return ResponseEntity.ok(bookService.getBooks(name, author))
     }
 
     @PostMapping
-    fun createNewBook(@Valid @RequestBody newBook: CreateBookDto): ResponseEntity<*> {
-        val book = Book(newBook.isbn, newBook.name, newBook.year, newBook.publisher)
-        return ResponseEntity.ok().body(bookRepository.save(book).toBookDto())
+    fun createNewBook(@Valid @RequestBody newBook: CreateBookDto): ResponseEntity<BookDto> {
+        return ResponseEntity.ok(bookService.createNewBook(newBook))
     }
 
     @PutMapping("/{bookId}")
@@ -63,29 +36,11 @@ class BookController(
         @PathVariable bookId: Long,
         @Valid @RequestBody updatedBook: UpdateBookDto
     ): ResponseEntity<*> {
-        val book = bookRepository.findBookByIsbn(bookId)
-        return if (book != null) {
-            val newBook = book.copy(
-                name = updatedBook.name ?: book.name,
-                year = updatedBook.year ?: book.year,
-                publisher = updatedBook.publisher ?: book.publisher,
-            )
-            ResponseEntity.ok().body(bookRepository.save(newBook).toBookDto())
-        } else {
-            logger.warn("Could not find book by id: $bookId")
-            ResponseEntity.status(HttpStatus.NOT_FOUND).body<Any>(ErrorResponse("Could not find the book to update"))
-        }
+        return ResponseEntity.ok(bookService.updateBookById(bookId, updatedBook))
     }
 
     @DeleteMapping("/{bookId}")
     fun deleteBookById(@PathVariable bookId: Long): ResponseEntity<*> {
-        val book = bookRepository.findBookByIsbn(bookId)
-        return if (book != null) {
-            bookRepository.delete(book)
-            ResponseEntity.ok<Any>(SuccessResponse("Book successfully deleted"))
-        } else {
-            logger.warn("Could not find book by id: $bookId")
-            ResponseEntity.status(HttpStatus.NOT_FOUND).body<Any>(ErrorResponse("Could not find the book to delete"))
-        }
+        return ResponseEntity.ok(bookService.deleteBookById(bookId))
     }
 }
