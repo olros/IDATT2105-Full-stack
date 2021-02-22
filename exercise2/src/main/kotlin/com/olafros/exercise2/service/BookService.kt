@@ -16,17 +16,17 @@ class BookService(
         private val logger = LoggerFactory.getLogger(BookController::class.java)
     }
 
-    fun getBookById(bookId: Long): BookDto {
+    fun getBookById(bookId: Long): Book {
         val book = bookRepository.findBookByIsbn(bookId)
         return if (book != null) {
-            book.toBookDto()
+            book
         } else {
             logger.warn("Could not find book by id: $bookId")
             throw NotFoundException("Could not find the book")
         }
     }
 
-    fun getBooks(name: String?, author: String?): List<BookDtoList> {
+    fun getBooks(name: String?, author: String?): List<Book> {
         val books = when {
             (name != null && author != null) -> {
                 logger.info("Search for book by name: $name and author: $author")
@@ -45,18 +45,18 @@ class BookService(
             }
             else -> bookRepository.findAll()
         }
-        return books.map { book -> book.toBookDtoList() }
+        return books
     }
 
-    fun createNewBook(newBook: CreateBookDto): BookDto {
+    fun createNewBook(newBook: CreateBookDto): Book {
         val book = Book(newBook.isbn, newBook.name, newBook.year, newBook.publisher)
-        return bookRepository.save(book).toBookDto()
+        return bookRepository.save(book)
     }
 
     fun updateBookById(
         bookId: Long,
         updatedBook: UpdateBookDto
-    ): BookDto {
+    ): Book {
         val book = bookRepository.findBookByIsbn(bookId)
         return if (book != null) {
             val newBook = book.copy(
@@ -64,7 +64,7 @@ class BookService(
                 year = updatedBook.year ?: book.year,
                 publisher = updatedBook.publisher ?: book.publisher,
             )
-            bookRepository.save(newBook).toBookDto()
+            bookRepository.save(newBook)
         } else {
             logger.warn("Could not find book by id: $bookId")
             throw NotFoundException("Could not find the book to update")

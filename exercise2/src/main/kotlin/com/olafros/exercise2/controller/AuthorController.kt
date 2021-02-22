@@ -14,17 +14,17 @@ class AuthorController(
 
     @GetMapping("/{authorId}")
     fun getAuthorById(@PathVariable authorId: Long): ResponseEntity<AuthorDto> {
-        return ResponseEntity.ok(authorService.getAuthorById(authorId))
+        return ResponseEntity.ok(authorService.getAuthorById(authorId).toAuthorDto())
     }
 
     @GetMapping
     fun getAuthors(@RequestParam name: String?): ResponseEntity<List<AuthorDtoList>> {
-        return ResponseEntity.ok(authorService.getAuthors(name))
+        return ResponseEntity.ok(authorService.getAuthors(name).map { author -> author.toAuthorDtoList() })
     }
 
     @PostMapping
     fun createNewAuthor(@Valid @RequestBody newAuthor: CreateAuthorDto): ResponseEntity<AuthorDto> {
-        return ResponseEntity.ok(authorService.createNewAuthor(newAuthor))
+        return ResponseEntity.ok(authorService.createNewAuthor(newAuthor).toAuthorDto())
     }
 
     @PutMapping("/{authorId}")
@@ -32,7 +32,7 @@ class AuthorController(
         @PathVariable authorId: Long,
         @Valid @RequestBody updatedAuthor: UpdateAuthorDto
     ): ResponseEntity<AuthorDto> {
-        return ResponseEntity.ok(authorService.updateAuthorById(authorId, updatedAuthor))
+        return ResponseEntity.ok(authorService.updateAuthorById(authorId, updatedAuthor).toAuthorDto())
     }
 
     @DeleteMapping("/{authorId}")

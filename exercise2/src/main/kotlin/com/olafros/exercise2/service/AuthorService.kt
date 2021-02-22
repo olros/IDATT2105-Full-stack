@@ -18,25 +18,25 @@ class AuthorService(
         private val logger = LoggerFactory.getLogger(AuthorController::class.java)
     }
 
-    fun getAuthorById(authorId: Long): AuthorDto {
+    fun getAuthorById(authorId: Long): Author {
         val author = authorRepository.findAuthorById(authorId)
         return if (author != null) {
-            author.toAuthorDto()
+            author
         } else {
             logger.warn("Could not find author by id: $authorId")
             throw NotFoundException("Could not find the author")
         }
     }
 
-    fun getAuthors(name: String?): List<AuthorDtoList> {
+    fun getAuthors(name: String?): List<Author> {
         val authors = if (name == null) authorRepository.findAll() else {
             logger.info("Search for author by name: $name")
             authorRepository.findAuthorsByNameContains(name)
         }
-        return authors.map { author -> author.toAuthorDtoList() }
+        return authors
     }
 
-    fun createNewAuthor(newAuthor: CreateAuthorDto): AuthorDto {
+    fun createNewAuthor(newAuthor: CreateAuthorDto): Author {
         val newAddress = Address(
             0,
             newAuthor.address.street,
@@ -47,13 +47,13 @@ class AuthorService(
         )
         val address = addressRepository.save(newAddress)
         val author = Author(0, newAuthor.name, address, mutableListOf())
-        return authorRepository.save(author).toAuthorDto()
+        return authorRepository.save(author)
     }
 
     fun updateAuthorById(
         authorId: Long,
         updatedAuthor: UpdateAuthorDto
-    ): AuthorDto {
+    ): Author {
         val author = authorRepository.findAuthorById(authorId)
         return if (author != null) {
             val address = if (updatedAuthor.address != null) Address(
@@ -68,7 +68,7 @@ class AuthorService(
                 name = updatedAuthor.name ?: author.name,
                 address = address,
             )
-            authorRepository.save(newAuthor).toAuthorDto()
+            authorRepository.save(newAuthor)
         } else {
             logger.warn("Could not find author by id: $authorId")
             throw NotFoundException("Could not find the team to update")
