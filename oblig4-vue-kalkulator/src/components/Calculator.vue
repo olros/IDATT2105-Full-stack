@@ -54,42 +54,45 @@ export default defineComponent({
       () => `${currentInput.value || ""}`,
     );
 
-    const sumUp = (withSign = true) => {
-      entireInput.value += withSign ? `${currentInput.value} ${chosenSign.value} ` : currentInput.value;
-      if (chosenSign.value === "+") {
+    const sumUp = () => {
+      const sign = chosenSign.value;
+      entireInput.value += `${currentInput.value} ${sign} `;
+      if (sign === "+") {
         totalInput.value += Number(currentInput.value);
-      } else if (chosenSign.value === "-") {
+      } else if (sign === "-") {
         totalInput.value -= Number(currentInput.value);
-      } else if (chosenSign.value === "/") {
+      } else if (sign === "/") {
         totalInput.value /= Number(currentInput.value);
-      } else if (chosenSign.value === "*") {
+      } else if (sign === "*") {
         totalInput.value *= Number(currentInput.value);
       }
     };
 
     const setSign = (newSign: "+" | "-" | "/" | "*") => {
-      if (chosenSign.value && hasInput.value) {
-        entireInput.value += `+ ${currentInput.value}`;
-        chosenSign.value = null;
-        currentInput.value = "";
-      } else if (hasInput.value) {
+      if (hasInput.value && !chosenSign.value) {
         chosenSign.value = newSign;
+        // entireInput.value += `${currentInput.value}`;
+        currentInput.value = "";
+      } else if (hasInput.value && chosenSign.value) {
+        sumUp();
+        chosenSign.value = null;
       }
     };
 
     const clickNumber = (newNumber: number | ".") => {
-      if (chosenSign.value && !hasInput.value) {
-        sumUp();
-        if (newNumber > 0) {
+      if (!hasInput.value) {
+        if (newNumber > 0 && currentInput.value.slice(-1) !== '.') {
           currentInput.value = `${newNumber}`;
         }
-      } else if (hasInput.value || newNumber > 0) {
+      } else if ((hasInput.value || newNumber > 0) && currentInput.value.slice(-1) !== '.') {
         currentInput.value += `${newNumber}`;
       }
     };
 
     const compute = () => {
-      sumUp(false);
+      sumUp();
+      entireInput.value += ` = ${totalInput.value}`;
+      totalInput.value += Number(currentInput.value);
       console.log(entireInput.value);
       console.log(totalInput.value);
     };
