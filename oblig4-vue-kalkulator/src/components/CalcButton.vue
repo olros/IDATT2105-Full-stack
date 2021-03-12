@@ -1,5 +1,5 @@
 <template>
-  <button class="button">
+  <button :disabled="disabled" class="button">
     {{ label }}
   </button>
 </template>
@@ -13,6 +13,10 @@ export default defineComponent({
     label: {
       type: String,
       required: true,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
   },
 });
