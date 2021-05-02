@@ -116,10 +116,15 @@ export default defineComponent({
           numbers: [...inputArray.value],
         })
       });
-      const answer: Result = await response.json();
-      result.value = answer.value;
-      showResult.value = true;
-      log.value = [input.value, ...log.value];
+      if (response.ok) {
+        const answer: Result = await response.json();
+        result.value = answer.value;
+        showResult.value = true;
+        log.value = [input.value, ...log.value];
+      } else {
+        const answer = await response.json();
+        alert(answer.message);
+      }
     };
 
     const reset = () => {
